@@ -245,7 +245,17 @@ export const connectionMixin = <T extends Constructor<HassBaseEl>>(
         }
       });
 
-      subscribeEntities(conn, (states) => this._updateHass({ states }));
+      subscribeEntities(conn, (states) => {
+        const sortedStates = Object.fromEntries(
+          Object.entries(states).sort(
+            ({ 1: a }, { 1: b }) =>
+              a.attributes.friendly_name?.localeCompare(
+                b.attributes.friendly_name ?? ""
+              ) ?? 0
+          )
+        );
+        return this._updateHass({ states: sortedStates });
+      });
       subscribeEntityRegistryDisplay(conn, (entityReg) => {
         const entities: HomeAssistant["entities"] = {};
         for (const entity of entityReg.entities) {
